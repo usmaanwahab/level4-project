@@ -25,3 +25,44 @@ OpenMP specifies a number of scoping rules on how directives may associate with 
 **Orphaned Directive** - An OpenMP directive that appears independently from another enclosing directive is said to be an orphaned directive. It exists outside of another directives static extent.
 
 **Dynamic Extent** - The dynamic extent of a directive includes both its static extend and the extents of its orphaned directives, for example a function that has a critical section is called by another parallel region.
+
+A **parallel** region is a block of code that will be executed by multiple threads. This is the fundamental OpenMP parallel construct.
+
+```c
+#pragma omp parallel [clause ...]
+{
+ // structured block
+}
+```
+
+Clauses can include:
+
+- `if(scalar_expression)` — conditionally enable or disable parallelism
+- `private(list)` — each thread gets its own uninitialised copy of the variables
+- `shared(list)` — variables are shared by all threads in the team
+- `default(shared | none)` — sets the default data-sharing attribute for unspecified variables
+- `firstprivate(list)` — each thread gets a private copy, initialised with the value from the master thread
+- `reduction(operator: list)` — perform a reduction across all threads using the specified operator
+- `copyin(list)` — initialise `threadprivate` variables from the master’s value
+- `num_threads(integer-expression)` — request a specific number of threads for this region
+
+
+When a thread reaches a `parallel` directive, it creates a team of threads and becomes the initial thread for that team. The initial thread is also part of the working threads. Starting from the beginning of the parallel regions, the code is duplicated and all threads will execute that code. 
+
+There is an **implied** barrier at the end of the parallel section. Only the initial thread continues execution past this point. If any threads terminates within a parallel region, all threads in the team will terminate, and the work done up until that point is undefined.
+
+The number of threads in a parallel region is determined by the following conditions, in order:
+- Evaluation of the `IF` clause
+- Setting of the `NUM_THREADS` clause
+- Use of the `omp_set_num_threads()` library function
+- Setting of `OMP_NUM_THREADS` environment variable
+- Implementation default - usually number of CPUs on a node.
+
+Dynamic threads are important for nested parallelism. If nested parallelism is **disabled** or dynamic teams are **not supported**, a parallel region nested inside another parallel region executes **serially**, with only the encountering thread acting as the team. If nested parallelism and dynamic threads are **enabled**, the runtime can create a new team of threads for the inner region, up to the number specified by `num_threads`.
+
+Restrictions on parallel constructs: 
+- A parallel region must be a structured block that does no span multiple routines or code files
+- It is illegal to branch (`goto`) into or out of a parallel region
+- Only a single `IF` clause is permitted
+- Only a single `NUM_THREADS` clause is permitted
+- A program must no depend upon the ordering of the clauses
