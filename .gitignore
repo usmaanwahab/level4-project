@@ -42,3 +42,6 @@
 
 # obsidian note software config files
 .obsidian
+
+# build directory
+build/
