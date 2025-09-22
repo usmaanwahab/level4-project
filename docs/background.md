@@ -17,3 +17,11 @@ OpenMP specification allows for placement of parallel regions inside other paral
 OpenMP follows the **single-program multiple-data** paradigm, where all threads have potential to execute the same program code, but each thread may access/modify different data and/or traverse different execution paths.
 
 OpenMP provides a "relaxed-consistency" and "temporary" view of thread memory - threads have equal access to shared memory where each variable can be retrieved/stored. Each thread also has its own temporary copies of variables that may be modified independent from variables in memory.
+
+OpenMP specifies a number of scoping rules on how directives may associate with each other. 
+
+**Static Extent** - The code is textually between the beginning and the end of a structures block, for example a `do` directive within an enclosing parallel region.
+
+**Orphaned Directive** - An OpenMP directive that appears independently from another enclosing directive is said to be an orphaned directive. It exists outside of another directives static extent.
+
+**Dynamic Extent** - The dynamic extent of a directive includes both its static extend and the extents of its orphaned directives, for example a function that has a critical section is called by another parallel region.
