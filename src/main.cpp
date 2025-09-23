@@ -27,7 +27,7 @@ struct ByeModule : PassInfoMixin<ByeModule> {
       }
     }
 
-    errs() << "stores: " << store_count << "\nloades: " << load_count;
+    errs() << "stores: " << store_count << "\nloades: " << load_count << "\n";
     return PreservedAnalyses::all();
   }
 };
