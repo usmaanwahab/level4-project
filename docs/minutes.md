@@ -10,52 +10,32 @@ Questions
 - How much proving and maths is required for this? (I don't have a strong maths background)
 - Example applications?
 
-From what I can read analysis in to parallelised for-loops is a well researched area even so far as to be in the LLVM project via a project called Polly do you think its reasonable to move focus more towards task based locality tools. 
+From what I can read analysis in to parallelised for-loops is a well researched area even so far as to be in the LLVM project via a project called Polly do you think its reasonable to move focus more towards task based locality tools.
 
 ---
-MEETING NOTES
-Symbol pointer tracking 
 
-Memory dependency analysis.
+To get started with the project, I should look into mapping out as many memory dependencies as possible.
 
-Try to get a complete map of memory dependencies of an OpenMP program at compile time.
+Then I can move onto analysing these dependencies and memory layout to place relevant computations and data closer together.
 
-Find dependencies between for loop chunks and task
+I should look into symbol pointer tracking. 
+Any analysis is better than none.
+Find dependencies between `parallel for` chunks and (dependent?) tasks.
 
-AST Level or IR level 
+I need to do some analysis on the AST level and also the IR level.
 
-OpenMP scheduling mechanism, maybe start with loo
+Gain a better understanding of OpenMP scheduling mechanisms, start with loops.
 
-memory aware topology aware scheduling 
+The aim of the project would shift towards saving energy and cycles from DRAM access. Not necessarily meant to get large performance gains.
 
-Significant gain energy to avoid memory transfers 
-Not looking for much performance gains.
+OpenMP provides details into memory aware topology aware scheduling.
 
-Static analysis is first step.
+Look into Control Flow Graph, Memory Analysis Graph.
 
-memory carry dependencies
+Polybench C programs
 
-The case where this chunk depends on some memory used by another chunk 
+Don't need any crazy maths.
 
-Group them together into something meaningful
+Will gain access to school computers for experimenting.
 
-OpenMP runtime supports finding the topology
-
-Last level cache 
-
-Any analysis is better than none
-
-GOAL 1 - map out as much memory dependencies as possible.
-
-GOAL 2 - analyse memory layout and dependencies to move relevant stuff as close as possible
-
-Control Flow Graph in LLVM?
-
-Use school servers instead 
-
-Control flow graph
-Memory analysis graph
-
-Getting tons of papers and textbooks and references
-
-Don't need strong maths and will find examples 
+Only Last Level Cache is shared between cores.
