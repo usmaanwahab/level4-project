@@ -4,7 +4,9 @@
 ---
 
 ## Progress
-- 
+- Completed reading "CesASMe and Staticdeps: static detection of memory-carried
+dependencies for code analyzers"
+- Currently reading "NOELLE Offers Empowering LLVM Extensions"
 
 ---
 
