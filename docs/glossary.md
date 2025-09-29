@@ -16,4 +16,5 @@
 - **Write After Read (WAR)** - An instruction writes to a location after it has been read by a previous instruction. This can typically be resolved by simply renaming. If the write instruction executes before the read instruction, the read instruction is wrong. Renaming allows OoO hardware to perform its optimisations.
 - **Write After Write** - Two instructions write to the same destination, order matters for correctness. Typically renaming or the RoB can be used to preserve program order.
 - **Induction Variable** - A variable that changes systematically and predictably across iterations, it is important for compiler loop optimisations. For example, the loop counter is a very basic example, but can also include variables within the body.
-- **Loop Invariant** - An expression where the reduction to a value is independent of the iteration variables. This is the basis for **loop invariant code motion** optimisation which moves this loop invariant outside the loop.1
+- **Loop Invariant** - An expression where the reduction to a value is independent of the iteration variables. This is the basis for **loop invariant code motion** optimisation which moves this loop invariant outside the loop.
+- **Peephole Optimisation** - This is a class of optimisation that only works based on a small window of context, or in other words locally.
