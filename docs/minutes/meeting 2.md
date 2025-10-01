@@ -33,3 +33,31 @@ dependencies for code analyzers"
 
 ## Quick Notes (during meeting)
 
+Compiler papers are hard to skim.
+
+Start with LLVM.
+
+Building on top of NOELLE is wise.
+
+Read papers in parallel
+
+Printing and annotating papers.
+
+NOELLE has videos - Search them
+
+Try to setup NOELLE and CeASMe.
+Compare them to what LLVM analyser gives you.
+
+Speak to Vim, Jeremey, Simon.
+
+Provide Nikela with GitHub link.
+
+Upload meeting minutes to MOODLE!!!
+
+
+Reuse distance
+I access a memory location now and I access again after after $n$ instructions. - Temporal
+
+Accessing this location now and neighbouring location a little bit later. - Spacial
+
+Get some idea of reuse distance from static analysis and such.
