@@ -1,4 +1,7 @@
 # 25-09-2025@1100
+
+Attendees: Usmaan & Nikela
+
 ---
 This will be the first meeting with Supervisor (Nikela Papadopoulou).
 Questions

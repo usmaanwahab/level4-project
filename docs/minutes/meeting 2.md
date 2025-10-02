@@ -1,5 +1,6 @@
 
 **Date & Time:** 1-10-2025 @ 11:30  
+Attendees: Usmaan & Nikela
 
 ---
 
@@ -22,12 +23,26 @@ dependencies for code analyzers"
 ---
 
 ## Answers / Decisions
-- 
+- The bars are stacked in reverse. 
+- Continue reading papers in parallel with development and it may be wise to print and annotate/highlight papers.
+- Building OpenMP locally is valuable but slightly tedious.
+- Yes, RAW dependencies are the hardest of the three as the other two can be at least partially mitigated.
+- Speak with Wim who knows more about the Compilers and LLVM
 
 ---
 
 ## Action Items
-- [ ] 
+- [ ] Download LLVM 14
+- [ ] Ensure it can coexist with latest LLVM
+- [ ] Setup NOELLE on LLVM 14
+- [ ] Test basic NOELLE features and record information
+- [ ] Setup CeASMe
+- [ ] Test basic CeASMe features and record information
+- [ ] Test basic LLVM features and record information
+- [ ] Compare and contrast the three methods
+- [ ] Give Nikela a link of the GitHub
+- [ ] Read into "reuse" distance
+- [ ] Engage with NOELLE video content
 
 ---
 
@@ -61,3 +76,4 @@ I access a memory location now and I access again after after $n$ instructions. 
 Accessing this location now and neighbouring location a little bit later. - Spacial
 
 Get some idea of reuse distance from static analysis and such.
+https://github.com/usmaanwahab/level4-project

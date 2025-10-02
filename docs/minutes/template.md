@@ -1,5 +1,6 @@
 
 **Date & Time:** 00-00-2025 @ 11:30  
+Attendees: Usmaan & Nikela
 
 ---
 
