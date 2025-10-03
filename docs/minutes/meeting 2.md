@@ -32,15 +32,16 @@ dependencies for code analyzers"
 ---
 
 ## Action Items
-- [ ] Download LLVM 14
-- [ ] Ensure it can coexist with latest LLVM
+- [x] Download LLVM 14
+- [x] Download LLVM 20
+- [x] Ensure it can coexist with latest LLVM
 - [ ] Setup NOELLE on LLVM 14
 - [ ] Test basic NOELLE features and record information
 - [ ] Setup CeASMe
 - [ ] Test basic CeASMe features and record information
 - [ ] Test basic LLVM features and record information
 - [ ] Compare and contrast the three methods
-- [ ] Give Nikela a link of the GitHub
+- [x] Give Nikela a link of the GitHub
 - [ ] Read into "reuse" distance
 - [ ] Engage with NOELLE video content
 
