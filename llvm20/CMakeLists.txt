@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.28.3)
 project(HelloWorldPass LANGUAGES C CXX)
 
 find_package(LLVM REQUIRED CONFIG)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 message(STATUS "LLVM include dirs: ${LLVM_INCLUDE_DIRS}")
 include_directories(${LLVM_INCLUDE_DIRS})
