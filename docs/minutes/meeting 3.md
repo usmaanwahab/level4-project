@@ -6,7 +6,7 @@ Attendees: Usmaan & Nikela
 
 ## Progress
 - Had to move over the Ubuntu to install LLVM 14 and 20
-- Reformat code
+- Reformatted repo to separate LLVM code and LLVM 20 in case of discrepancy later i.e opaque pointers
 
 ---
 
