@@ -10,14 +10,6 @@ add_definitions(${LLVM_DEFINITIONS})
 list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 include(AddLLVM)
 
-if(DEFINED ENV{LLVM_VERSION} AND $ENV{LLVM_VERSION} STREQUAL "14")
-    set(CLANG_BIN /usr/lib/llvm-14/bin/clang++)
-elseif(DEFINED ENV{LLVM_VERSION} AND $ENV{LLVM_VERSION} STREQUAL "20")
-    set(CLANG_BIN /usr/lib/llvm-20/bin/clang++)
-else()
-    set(CLANG_BIN clang++)  # fallback
-endif()
-
 add_llvm_pass_plugin(HelloWorldPass src/main.cpp)
 
 file(GLOB TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp")
