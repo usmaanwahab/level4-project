@@ -1,16 +1,28 @@
 cmake_minimum_required(VERSION 3.28.3)
 project(HelloWorldPass LANGUAGES C CXX)
 
+set(NOELLE_DIR "/home/usmaan/Workspace/noelle")
+
 find_package(LLVM 14 REQUIRED CONFIG)
 
 message(STATUS "LLVM include dirs: ${LLVM_INCLUDE_DIRS}")
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 
+add_library(Noelle SHARED IMPORTED)
+set_target_properties(Noelle PROPERTIES IMPORTED_LOCATION
+    "${NOELLE_DIR}/install/lib/Noelle.so"
+)
+
+include_directories(${NOELLE_DIR}/include)
+link_directories(${NOELLE_DIR}/install/lib)
+
 list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 include(AddLLVM)
 
 add_llvm_pass_plugin(HelloWorldPass src/main.cpp)
+
+target_link_libraries(HelloWorldPass PRIVATE Noelle)
 
 file(GLOB TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp")
 
