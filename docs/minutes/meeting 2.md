@@ -43,7 +43,7 @@ dependencies for code analyzers"
 - [ ] Compare and contrast the three methods
 - [x] Give Nikela a link of the GitHub
 - [ ] Read into "reuse" distance
-- [ ] Engage with NOELLE video content
+- [x] Engage with NOELLE video content
 
 ---
 
