@@ -35,7 +35,7 @@ dependencies for code analyzers"
 - [x] Download LLVM 14
 - [x] Download LLVM 20
 - [x] Ensure it can coexist with latest LLVM
-- [ ] Setup NOELLE on LLVM 14
+- [x] Setup NOELLE on LLVM 14
 - [ ] Test basic NOELLE features and record information
 - [ ] Setup CeASMe
 - [ ] Test basic CeASMe features and record information
