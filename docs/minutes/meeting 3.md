@@ -23,7 +23,7 @@ Attendees: Usmaan & Nikela
 ---
 
 ## Action Items
-- [ ] Investigate LLVM20 Memory SSA
+- [ ] Investigate [[LLVM]]20 [[MemorySSA]]
 
 ---
 

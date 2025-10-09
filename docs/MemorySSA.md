@@ -1,5 +1,5 @@
 Cheap reasoning  of various memory operations
-`MemorySSA` is better than `MemoryDepdencyAnalayis` in LLVM
+`MemorySSA` is better than `MemoryDepdencyAnalayis` in [[LLVM]]
 One common use of `MemorySSA` is to quickly find out that something absolutely cannot happen (for example, reason that hoist out of a loop can't happen).
 
 `MemorySSA` is intra-procedural.
