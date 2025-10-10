@@ -23,7 +23,8 @@ Attendees: Usmaan & Nikela
 ---
 
 ## Action Items
-- [ ] Investigate [[LLVM]]20 [[MemorySSA]]
+- [x] Investigate [[LLVM]]20 [[MemorySSA]]
+- [ ] Watch LLVM 2020 YouTube video
 
 ---
 
