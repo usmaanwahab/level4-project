@@ -1,11 +1,40 @@
-So I want to perform static analysis on an intermediate representation of (for now) a `c++` source file.
+# Plan
 
-It was also recommended to perform some analysis over the **Abstract Syntax Tree**.
+* PROJECT TITLE
+* YOUR NAME
+* STUDENT ID
+* SUPERVISOR NAME
 
-Specifically I want to model memory dependencies in `c++` code that takes advantage of the OpenMP runtime.
+Week-by-week plan for the whole project. Update this as you go along.
 
-I want to statically (and possibly dynamically) find memory dependencies in OpenMP `#pragma omp for` loops. This typically uses a static scheduling policy.
+## Winter semester
 
-Then, I want to statically (and probably dynamically) find memory dependencies in OpenMP `tasks`. This typically uses a dynamic scheduling policy.
+* **Week 1**
+* **Week 2**
+* **Week 3**
+* **Week 4**
+* **Week 5**
+* **Week 6**
+* **Week 7**
+* **Week 8**
+* **Week 9**
+* **Week 10**
+* **Week 11 [PROJECT WEEK]**
+* **Week 12 [PROJECT WEEK]** Status report submitted.
 
-I need to look into the techniques used to find different kinds of dependencies I assume it would be better too look into **Read After Write** dependencies since these cause the most problems as **Write After Read** and **Write After Write** are typically solvable or can be at least mitigated by using renaming and some **Reorder Buffer** and **Out of Order** execution mechanism.
+## Winter break
+
+## Spring Semester
+
+* **Week 13**
+* **Week 14**
+* **Week 15**
+* **Week 16**
+* **Week 17**
+* **Week 19**
+* **Week 20**
+* **Week 21**
+* **Week 22**
+* **Week 23 [TERM ENDS]**
+* **Week 24** Dissertation submission deadline and presentations.
+
