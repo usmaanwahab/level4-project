@@ -1,0 +1,1 @@
+A concept used to indicate when it is unsafe to interchange the order of two statement instances.

@@ -63,3 +63,21 @@ for (auto *Op: Z->operands()) {
 }
 // %x %y
 ```
+
+
+```c
+def @foo(i32* %a, i32 %i) { // 0 = liveOnEntry
+	%b = getelementptr %a, %i
+	%c = alloca i32
+	
+	store %v, i32* %a // 1 = MemoryDef(0)
+	
+	%y = load i32* %b // MemoryUse(1)
+	%z = load i32* %c // MemoryUse(0)
+}
+```
+
+We can see that we can move the last `load` before the `store`. If we were to draw the `MemorySSA` graph we would see that there is no edge between `MemoryUse(0)` and `MemoryUse(1)`. This means those two cannot alias.
+
+
+The walker is a utility that can be queried with a memory access retrieving the last clobbering memory access.

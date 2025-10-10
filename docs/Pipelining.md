@@ -1,0 +1,1 @@
+Subdividing a complex operation into a sequence of independent segments so that, if the different segments use different resources, operations can be overlapped by starting an operation as its predecessor has completed the first segment.

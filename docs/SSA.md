@@ -8,7 +8,7 @@ y = 2
 x = y
 ```
 
-Trivially, we can see that the first assignment is not necessary and can be removed completely without changing the semantics of the program. A program would have to perform [[reaching definition analysis]] to determine this. 
+Trivially, we can see that the first assignment is not necessary and can be removed completely without changing the semantics of the program. A program would have to perform [[Reaching Definition Analysis]] to determine this. 
 
 However, if the program is in SSA form, both of these are immediate.
 ```c

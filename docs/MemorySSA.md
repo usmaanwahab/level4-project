@@ -12,6 +12,6 @@ A `PhiNode` is a pseudo-instruction used in SSA to select a value depending on w
 
 `liveOnEntry` implies that the memory being used is either undefined or defined before the function begins. It is used as a "fake" `memorySSA` to denote that the subsequent instructions are using memory that isn't necessarily defined in the function.
 
-If a `MemoryAccess` is a clobber of another, it means that these two `MemoryAccesses` may access the same memory.
+If a `MemoryAccess` is a [[clobber]] of another, it means that these two `MemoryAccesses` may access the same memory.
 
 `MemorySSAWalker` assists the `MemorySSA`. The goal of the walker is to provide answers to clobber queries beyond what's represented directly by `MemoryAccesses`.
