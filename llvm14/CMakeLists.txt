@@ -14,6 +14,8 @@ set_target_properties(Noelle PROPERTIES IMPORTED_LOCATION
     "${NOELLE_DIR}/install/lib/Noelle.so"
 )
 
+include_directories("${NOELLE_DIR}/install/include")
+
 list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 include(AddLLVM)
 
