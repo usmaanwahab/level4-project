@@ -34,6 +34,7 @@ foreach(src ${TEST_SOURCES})
     get_filename_component(dir ${src} DIRECTORY)
 
     set(OUTPUT_LL "${dir}/${name}.ll")
+    set(OUTPUT_BC "${dir}/${name}.bc")
 
     add_custom_command(
         OUTPUT ${OUTPUT_LL}
@@ -42,7 +43,14 @@ foreach(src ${TEST_SOURCES})
         VERBATIM
     )
 
-    add_custom_target(${name}_ll ALL
-        DEPENDS ${OUTPUT_LL}
+    add_custom_command(
+        OUTPUT ${OUTPUT_BC}
+        COMMAND clang++-14 -fopenmp -emit-llvm -c -o ${OUTPUT_BC} ${src}
+        DEPENDS ${src}
+        VERBATIM
+    )
+
+    add_custom_target(${name}_ir ALL
+        DEPENDS ${OUTPUT_LL} ${OUTPUT_BC}
     )
 endforeach()
