@@ -15,4 +15,5 @@ clang -fopenmp -S -emit-llvm main.c -o main.ll
 opt-14 -load-pass-plugin=./HelloWorldPass.so -passes=hello-world ../tests/test1.ll -disable-output
 
 opt-20 -load-pass-plugin=./HelloWorldPass.so -passes=hello-world ../tests/test1.ll -disable-output
+noelle-load -load ./HelloWorldPass.so -CAT ../tests/test2.bc -o ../tests/test2-out.bc
 ```
