@@ -17,11 +17,14 @@ Attendees: Usmaan & Nikela
 
 ---
 ## Answers / Decisions
-- 
+- That may not be necessary but Nikela will get back to me
+- NUMA is irrelevant 
 
 ---
 ## Action Items
-- [ ] 
+- [ ] Enable tracing and debug in OpenMP
+- [ ] Continue learning about memory dependencies
+- [ ] Continue exploring NOELLE
 
 ---
 ## Quick Notes (during meeting)
