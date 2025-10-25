@@ -1,4 +1,4 @@
-
+ 
 **Date & Time:** 08-10-2025 @ 11:30  
 Attendees: Usmaan & Nikela
 
