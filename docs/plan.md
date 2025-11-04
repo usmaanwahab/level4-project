@@ -9,7 +9,6 @@ Week-by-week plan for the whole project. Update this as you go along.
 ## Winter semester
 
 * **Week 1**
-
 * **Week 2**
 * **Week 3**
 * **Week 4**
