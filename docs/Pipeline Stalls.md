@@ -1,1 +1,0 @@
-A stall occurs when a new set of inputs cannot be injected into the pipeline because of a condition called a [[hazard]]
