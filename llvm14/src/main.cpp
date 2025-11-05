@@ -33,7 +33,6 @@ struct CAT : public ModulePass {
      * Fetch the entry point.
      */
     auto fm = noelle.getFunctionsManager();
-    auto mainF = fm->getEntryFunction();
 
     /*
      * Fetch the data flow engine.
@@ -60,36 +59,33 @@ struct CAT : public ModulePass {
       OUT.insert(inS.begin(), inS.end());
       return;
     };
-    auto computeIN =
-        [](Instruction *inst, std::set<Value *> &IN, DataFlowResult *df) {
-          auto &genI = df->GEN(inst);
-          auto &outI = df->OUT(inst);
-          IN.insert(outI.begin(), outI.end());
-          IN.insert(genI.begin(), genI.end());
-          return;
-        };
+    auto computeIN = [](Instruction *inst,
+                        std::set<Value *> &IN,
+                         DataFlowResult *df) {
+      auto &genI = df->GEN(inst);
+      auto &outI = df->OUT(inst);
+      IN.insert(outI.begin(), outI.end());
+      IN.insert(genI.begin(), genI.end());
+      return;
+    };
 
-    /*
-     * Run the data flow analysis
-     */
-    auto customDfr = dfe.applyBackward(mainF,
-                                       computeGEN,
-                                       computeKILL,
-                                       computeIN,
-                                       computeOUT);
 
     /*
      * Print
      */
-    for (auto &inst : instructions(mainF)) {
-      if (!isa<LoadInst>(&inst)) {
-        continue;
-      }
-      auto insts = customDfr->OUT(&inst);
-      errs() << " Next are the " << insts.size() << " instructions ";
-      errs() << "that could read the value loaded by " << inst << "\n";
-      for (auto possibleInst : insts) {
-        errs() << "   " << *possibleInst << "\n";
+    for (auto f : fm->getFunctions()) {
+      errs() << f->getName();
+      for (auto &inst : instructions(f)) {
+        if (!isa<LoadInst>(&inst)) {
+          continue;
+        }
+        auto customDfr = dfe.applyBackward(f, computeGEN, computeKILL, computeIN, computeOUT);   
+        auto insts = customDfr->OUT(&inst);
+        errs() << " Next are the " << insts.size() << " instructions ";
+        errs() << "that could read the value loaded by " << inst << "\n";
+        for (auto possibleInst : insts) {
+          errs() << "   " << *possibleInst << "\n";
+        }
       }
     }
 

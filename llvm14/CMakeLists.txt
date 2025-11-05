@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28.3)
-project(HelloWorldPass LANGUAGES C CXX)
+project(MyPass LANGUAGES C CXX)
 
 set(NOELLE_DIR "/opt/noelle")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -19,13 +19,13 @@ include_directories("${NOELLE_DIR}/install/include")
 list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 include(AddLLVM)
 
-add_llvm_pass_plugin(HelloWorldPass src/main.cpp)
+add_llvm_pass_plugin(MyPass src/main.cpp)
 
-target_include_directories(HelloWorldPass PRIVATE
+target_include_directories(MyPass PRIVATE
     ${NOELLE_DIR}/install/include
 )
 
-target_link_libraries(HelloWorldPass PRIVATE Noelle)
+target_link_libraries(MyPass PRIVATE Noelle)
 
 file(GLOB TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp")
 

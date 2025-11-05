@@ -14,3 +14,11 @@ int main() {
     }
   }
 }
+
+int foo() {
+  int x = 10;
+  int y = x + x;
+  x++;
+  y--;
+  return y;
+}
