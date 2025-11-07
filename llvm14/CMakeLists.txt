@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.28.3)
 project(MyPass LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 17)
 
 set(NOELLE_DIR "/opt/noelle")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
