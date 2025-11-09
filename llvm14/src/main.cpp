@@ -9,37 +9,121 @@
 
 using namespace arcana::noelle;
 
-struct CAT : public ModulePass
+namespace
 {
-  static char ID;
-  CAT() : ModulePass(ID) {}
 
-  bool doInitialization(Module &M) override
+  class MyDependenceAnalysis : public DependenceAnalysis
   {
-    return false;
-  }
+  public:
+    MyDependenceAnalysis()
+        : DependenceAnalysis("Example of data dependence analysis"),
+          c{0} {}
 
-  bool runOnModule(Module &M) override
-  {
-    auto &noelle = getAnalysis<Noelle>();
+    bool canThereBeAMemoryDataDependence(Instruction *fromInst,
+                                         Instruction *toInst,
+                                         Function &f) override
+    {
+      errs() << this->prefix << "canThereBeAMemoryDataDependence: Function "
+             << f.getName() << "\n";
+      errs() << this->prefix << "canThereBeAMemoryDataDependence:   From "
+             << *fromInst << "\n";
+      errs() << this->prefix << "canThereBeAMemoryDataDependence:   To "
+             << *toInst << "\n";
+      errs() << this->prefix << "canThereBeAMemoryDataDependence:\n";
 
-    auto PDG = noelle.getProgramDependenceGraph();
-    auto fm = noelle.getFunctionsManager();
+      c++;
 
-    for (auto f: fm->getFunctions()) {
-
+      return true;
     }
-  }
 
-  void getAnalysisUsage(AnalysisUsage &AU) const override
+    bool canThereBeAMemoryDataDependence(Instruction *fromInst,
+                                         Instruction *toInst,
+                                         LoopStructure &loop) override
+    {
+      auto entryInst = loop.getEntryInstruction();
+      auto f = fromInst->getFunction();
+      errs() << this->prefix
+             << "canThereBeAMemoryDataDependence: Loop at nesting level "
+             << loop.getNestingLevel() << ": " << *entryInst << "\n";
+      errs() << this->prefix << "canThereBeAMemoryDataDependence:   In function "
+             << f->getName() << "\n";
+      errs()
+          << this->prefix << "canThereBeAMemoryDataDependence:   Dependence from "
+          << *fromInst << "\n";
+      errs() << this->prefix << "canThereBeAMemoryDataDependence:   to "
+             << *toInst << "\n";
+      errs() << this->prefix << "canThereBeAMemoryDataDependence:\n";
+
+      c++;
+
+      return true;
+    }
+
+    ~MyDependenceAnalysis()
+    {
+      errs() << "The API has been invoked " << this->c << " times\n";
+    }
+
+  private:
+    std::string prefix;
+    uint64_t c;
+  };
+
+  struct CAT : public ModulePass
   {
-    AU.addRequired<NoellePass>();
-  }
-};
+    static char ID;
 
+    CAT() : ModulePass(ID) {}
+
+    bool doInitialization(Module &M) override
+    {
+      return false;
+    }
+
+    bool runOnModule(Module &M) override
+    {
+      errs() << "Example: Start\n";
+
+      errs() << "Example:   Fetch NOELLE\n";
+      auto &noelle = getAnalysis<NoellePass>().getNoelle();
+
+      errs() << "Example:   Register my own data dependence analysis\n";
+      MyDependenceAnalysis myDepAnalysis{};
+      noelle.addAnalysis(&myDepAnalysis);
+
+      errs() << "Example:   Fetch the PDG\n";
+      auto PDG = noelle.getProgramDependenceGraph();
+
+      errs() << "Example:   Fetch the FDG of \"main\"\n";
+      auto fm = noelle.getFunctionsManager();
+      auto mainF = fm->getEntryFunction();
+      auto FDG = PDG->createFunctionSubgraph(*mainF);
+
+      auto allLoops = noelle.getLoopStructures();
+      if (allLoops->size() > 0)
+      {
+        errs() << "Example:   Fetch the LDG of the hottest loop\n";
+        noelle.sortByHotness(*allLoops);
+        auto hottestLoop = (*allLoops)[0];
+        auto ldi = noelle.getLoopContent(hottestLoop);
+      }
+
+      errs() << "Example: Exit\n";
+      return false;
+    }
+
+    void getAnalysisUsage(AnalysisUsage &AU) const override
+    {
+      AU.addRequired<NoellePass>();
+    }
+  };
+}
+
+// Next there is code to register your pass to "opt"
 char CAT::ID = 0;
 static RegisterPass<CAT> X("CAT", "Simple user of the Noelle framework");
 
+// Next there is code to register your pass to "clang"
 static CAT *_PassMaker = NULL;
 static RegisterStandardPasses _RegPass1(PassManagerBuilder::EP_OptimizerLast,
                                         [](const PassManagerBuilder &,
@@ -49,8 +133,7 @@ static RegisterStandardPasses _RegPass1(PassManagerBuilder::EP_OptimizerLast,
                                           {
                                             PM.add(_PassMaker = new CAT());
                                           }
-                                        });
-
+                                        }); // ** for -Ox
 static RegisterStandardPasses _RegPass2(
     PassManagerBuilder::EP_EnabledOnOptLevel0,
     [](const PassManagerBuilder &, legacy::PassManagerBase &PM)
@@ -59,4 +142,4 @@ static RegisterStandardPasses _RegPass2(
       {
         PM.add(_PassMaker = new CAT());
       }
-    });
+    }); // ** for -O0
