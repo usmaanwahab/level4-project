@@ -78,16 +78,16 @@ struct CAT : public ModulePass {
     */
     auto &noelle = getAnalysis<NoellePass>().getNoelle();
     auto dfe = noelle.getDataFlowEngine();
-    auto aliasAnalysisEngines = noelle.getAliasAnalysisEngines();
-
-    AliasAnalysisEngine *aa = nullptr;
-    for (auto e : aliasAnalysisEngines) {
-      if (e->getName() == "SVF") {
-        aa = e;
-        break;
-      }
-    }
-    auto *pta = static_cast<SVF::PointerAnalysis*>(aa->getRawPointer());
+    // auto aliasAnalysisEngines = noelle.getAliasAnalysisEngines();
+    //
+    // AliasAnalysisEngine *aa = nullptr;
+    // for (auto e : aliasAnalysisEngines) {
+    //   if (e->getName() == "SVF") {
+    //     aa = e;
+    //     break;
+    //   }
+    // }
+    // auto *pta = static_cast<SVF::PointerAnalysis*>(aa->getRawPointer());
 
     auto computeGen = [](Instruction *i, DataFlowResult *df) {
       if (!isa<LoadInst>(i)) {
@@ -120,32 +120,32 @@ struct CAT : public ModulePass {
     auto customDfr = dfe.applyBackward(mainF, computeGen, computeKILL,
                                        computeIN, computeOUT);
 
-    for (auto &F : M) {
-      for (auto &If : instructions(F)) {
-        if (auto *Lf = dyn_cast<LoadInst>(&If)) {
-          for (auto &G : M) {
-            for (auto &Ig : instructions(G)) {
-              if (auto *Lg = dyn_cast<LoadInst>(&Ig)) {
-                if (Lf == Lg) {
-                  continue;
-                }
-                llvm::Value *ptr1 = Lf->getPointerOperand();
-                llvm::Value *ptr2 = Lg->getPointerOperand();
-                SVF::SVFVar
-                auto result =
-                    pta->alias(ptr1, ptr2);
-                if (result == AliasResult::MayAlias) {
-                  errs() << "Instruction: " << Lf << " may alias " << Lg;
-                }
-                if (result == AliasResult::MustAlias) {
-                  errs() << "Instruction: " << Lf << " must alias " << Lg;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    // for (auto &F : M) {
+    //   for (auto &If : instructions(F)) {
+    //     if (auto *Lf = dyn_cast<LoadInst>(&If)) {
+    //       for (auto &G : M) {
+    //         for (auto &Ig : instructions(G)) {
+    //           if (auto *Lg = dyn_cast<LoadInst>(&Ig)) {
+    //             if (Lf == Lg) {
+    //               continue;
+    //             }
+    //             llvm::Value *ptr1 = Lf->getPointerOperand();
+    //             llvm::Value *ptr2 = Lg->getPointerOperand();
+    //             SVF::SVFVar
+    //             auto result =
+    //                 pta->alias(ptr1, ptr2);
+    //             if (result == AliasResult::MayAlias) {
+    //               errs() << "Instruction: " << Lf << " may alias " << Lg;
+    //             }
+    //             if (result == AliasResult::MustAlias) {
+    //               errs() << "Instruction: " << Lf << " must alias " << Lg;
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
     return false;
   }
 
