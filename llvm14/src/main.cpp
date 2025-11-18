@@ -7,7 +7,14 @@
 
 #include "arcana/noelle/core/NoellePass.hpp"
 #include "svf/MemoryModel/PointerAnalysis.h"
+#include "Graphs/SVFG.h"
+#include "SVF-LLVM/SVFIRBuilder.h"
+#include "Util/Options.h"
+#include "WPA/Andersen.h"
 
+using namespace llvm;
+using namespace std;
+using namespace SVF;
 using namespace arcana::noelle;
 
 namespace {
@@ -76,17 +83,27 @@ struct CAT : public ModulePass {
     Identify the load instructions that may execute after a given load
     instruction, for all load instructions
     */
+  
+    Options::PA = PointerAnalysis::AndersenWaveDiff_WPA;
+    Options::AnderSVFG = true;
     auto &noelle = getAnalysis<NoellePass>().getNoelle();
     auto dfe = noelle.getDataFlowEngine();
     auto aliasAnalysisEngines = noelle.getAliasAnalysisEngines();
 
     AliasAnalysisEngine *aa = nullptr;
     for (auto e : aliasAnalysisEngines) {
-      if (e->getName() == "SVF") {
+      // outs() << "ENGINE " << e->getName() << "\n";
+      if (e->getName() == "ProgramAliasAnalysisEngine \"SVF\"") {
         aa = e;
         break;
       }
     }
+
+    if (aa == nullptr) {
+      outs() << "No engine selected, exiting...";
+      return false;
+    }
+
     auto *pta = static_cast<SVF::PointerAnalysis*>(aa->getRawPointer());
 
     auto computeGen = [](Instruction *i, DataFlowResult *df) {
@@ -119,7 +136,14 @@ struct CAT : public ModulePass {
 
     auto customDfr = dfe.applyBackward(mainF, computeGen, computeKILL,
                                        computeIN, computeOUT);
-
+    
+    // std::vector<std::string> vec;
+    // vec.push_back("/workspace/tests/aliasing.bc");
+    // LLVMModuleSet::preProcessBCs(vec);
+    // LLVMModuleSet::buildSVFModule(M);
+  
+    auto modset = LLVMModuleSet::getLLVMModuleSet();
+    outs() << "Module Set Created\n";
     for (auto &F : M) {
       for (auto &If : instructions(F)) {
         if (auto *Lf = dyn_cast<LoadInst>(&If)) {
@@ -129,17 +153,23 @@ struct CAT : public ModulePass {
                 if (Lf == Lg) {
                   continue;
                 }
+                outs() << "Module Set Created\n";
+
                 llvm::Value *ptr1 = Lf->getPointerOperand();
                 llvm::Value *ptr2 = Lg->getPointerOperand();
-                SVF::SVFVar
-                auto result =
-                    pta->alias(ptr1, ptr2);
-                if (result == AliasResult::MayAlias) {
+                outs() << "Module Set Created\n";
+                // SVF::LLVMModuleSet *modSet = M->getSourceFileName();
+                SVF::SVFValue *v1 = modset->getSVFValue(ptr1);
+                SVF::SVFValue *v2 = modset->getSVFValue(ptr2);
+                outs() << "Module Set Created\n";
+                auto result = pta->alias(v1, v2);
+                if (result == SVF::AliasResult::MayAlias) {
                   errs() << "Instruction: " << Lf << " may alias " << Lg;
                 }
-                if (result == AliasResult::MustAlias) {
+                if (result == SVF::AliasResult::MustAlias) {
                   errs() << "Instruction: " << Lf << " must alias " << Lg;
                 }
+                outs() << "Module Set Created\n";
               }
             }
           }
