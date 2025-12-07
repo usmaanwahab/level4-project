@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(NOELLE_DIR "/workspace/noelle")
+set(NOELLE_DIR "/opt/noelle")
 
 find_package(LLVM 14 REQUIRED CONFIG)
 include_directories(${LLVM_INCLUDE_DIRS})
