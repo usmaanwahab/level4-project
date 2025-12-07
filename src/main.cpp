@@ -1,151 +1,101 @@
-#include "llvm/IR/Function.h"
-#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Pass.h"
+#include "llvm/IR/Function.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include <algorithm>
 
 #include "arcana/noelle/core/NoellePass.hpp"
-#include "svf/MemoryModel/PointerAnalysis.h"
 
 using namespace arcana::noelle;
 
 namespace {
-
-class MyDependenceAnalysis : public DependenceAnalysis {
-public:
-  MyDependenceAnalysis()
-      : DependenceAnalysis("Example of data dependence analysis"), c{0} {}
-
-  bool canThereBeAMemoryDataDependence(Instruction *fromInst,
-                                       Instruction *toInst,
-                                       Function &f) override {
-    errs() << this->prefix << "canThereBeAMemoryDataDependence: Function "
-           << f.getName() << "\n";
-    errs() << this->prefix << "canThereBeAMemoryDataDependence:   From "
-           << *fromInst << "\n";
-    errs() << this->prefix << "canThereBeAMemoryDataDependence:   To "
-           << *toInst << "\n";
-    errs() << this->prefix << "canThereBeAMemoryDataDependence:\n";
-
-    c++;
-
-    return true;
-  }
-
-  bool canThereBeAMemoryDataDependence(Instruction *fromInst,
-                                       Instruction *toInst,
-                                       LoopStructure &loop) override {
-    auto entryInst = loop.getEntryInstruction();
-    auto f = fromInst->getFunction();
-    errs() << this->prefix
-           << "canThereBeAMemoryDataDependence: Loop at nesting level "
-           << loop.getNestingLevel() << ": " << *entryInst << "\n";
-    errs() << this->prefix << "canThereBeAMemoryDataDependence:   In function "
-           << f->getName() << "\n";
-    errs() << this->prefix
-           << "canThereBeAMemoryDataDependence:   Dependence from " << *fromInst
-           << "\n";
-    errs() << this->prefix << "canThereBeAMemoryDataDependence:   to "
-           << *toInst << "\n";
-    errs() << this->prefix << "canThereBeAMemoryDataDependence:\n";
-
-    c++;
-
-    return true;
-  }
-
-  ~MyDependenceAnalysis() {
-    errs() << "The API has been invoked " << this->c << " times\n";
-  }
-
-private:
-  std::string prefix;
-  uint64_t c;
-};
 
 struct CAT : public ModulePass {
   static char ID;
 
   CAT() : ModulePass(ID) {}
 
-  bool doInitialization(Module &M) override { return false; }
+  bool doInitialization(Module &M) override {
+    return false;
+  }
 
   bool runOnModule(Module &M) override {
+
     /*
-    Identify the load instructions that may execute after a given load
-    instruction, for all load instructions
-    */
+     * Fetch NOELLE
+     */
     auto &noelle = getAnalysis<NoellePass>().getNoelle();
-    auto dfe = noelle.getDataFlowEngine();
-    // auto aliasAnalysisEngines = noelle.getAliasAnalysisEngines();
-    //
-    // AliasAnalysisEngine *aa = nullptr;
-    // for (auto e : aliasAnalysisEngines) {
-    //   if (e->getName() == "SVF") {
-    //     aa = e;
-    //     break;
-    //   }
-    // }
-    // auto *pta = static_cast<SVF::PointerAnalysis*>(aa->getRawPointer());
+    /*
+     * Fetch the PDG
+     */
+    auto PDG = noelle.getProgramDependenceGraph();
 
-    auto computeGen = [](Instruction *i, DataFlowResult *df) {
-      if (!isa<LoadInst>(i)) {
-        return;
-      }
-      auto &gen = df->GEN(i);
-      gen.insert(i);
-    };
-
-    auto computeKILL = [](Instruction *, DataFlowResult *) { return; };
-
-    auto computeOUT = [](Instruction *i, Instruction *successor,
-                         std::set<Value *> &OUT, DataFlowResult *df) {
-      auto &inS = df->IN(successor);
-      OUT.insert(inS.begin(), inS.end());
-      return;
-    };
-
-    auto computeIN = [](Instruction *i, std::set<Value *> &IN,
-                        DataFlowResult *df) {
-      auto &genI = df->GEN(i);
-      auto &outI = df->OUT(i);
-      IN.insert(outI.begin(), outI.end());
-      IN.insert(genI.begin(), genI.end());
-    };
-
+    /*
+     * Fetch the FDG of "main"
+     */
     auto fm = noelle.getFunctionsManager();
     auto mainF = fm->getEntryFunction();
+    auto FDG = PDG->createFunctionSubgraph(*mainF);
 
-    auto customDfr = dfe.applyBackward(mainF, computeGen, computeKILL,
-                                       computeIN, computeOUT);
+    /*
+     * Iterate over the dependences
+     */
+    auto iterF = [](Value *src, DGEdge<Value, Value> *dep) -> bool {
+      errs() << "   " << *src << " ";
 
-    // for (auto &F : M) {
-    //   for (auto &If : instructions(F)) {
-    //     if (auto *Lf = dyn_cast<LoadInst>(&If)) {
-    //       for (auto &G : M) {
-    //         for (auto &Ig : instructions(G)) {
-    //           if (auto *Lg = dyn_cast<LoadInst>(&Ig)) {
-    //             if (Lf == Lg) {
-    //               continue;
-    //             }
-    //             llvm::Value *ptr1 = Lf->getPointerOperand();
-    //             llvm::Value *ptr2 = Lg->getPointerOperand();
-    //             SVF::SVFVar
-    //             auto result =
-    //                 pta->alias(ptr1, ptr2);
-    //             if (result == AliasResult::MayAlias) {
-    //               errs() << "Instruction: " << Lf << " may alias " << Lg;
-    //             }
-    //             if (result == AliasResult::MustAlias) {
-    //               errs() << "Instruction: " << Lf << " must alias " << Lg;
-    //             }
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
+      if (isa<ControlDependence<Value, Value>>(dep)) {
+        errs() << " CONTROL ";
+      } else {
+        errs() << " DATA ";
+        auto dataDep = cast<DataDependence<Value, Value>>(dep);
+        if (dataDep->isRAWDependence()) {
+          errs() << " RAW ";
+        }
+        if (dataDep->isWARDependence()) {
+          errs() << " WAR ";
+        }
+        if (dataDep->isWAWDependence()) {
+          errs() << " WAW ";
+        }
+        if (isa<MemoryDependence<Value, Value>>(dataDep)) {
+          errs() << " MEMORY ";
+          auto memDep = cast<MemoryDependence<Value, Value>>(dataDep);
+          if (isa<MustMemoryDependence<Value, Value>>(memDep)) {
+            errs() << " MUST ";
+          } else {
+            errs() << " MAY ";
+          }
+        }
+      }
+
+      errs() << "\n";
+      return false;
+    };
+
+    for (auto &inst : instructions(mainF)) {
+      errs() << "Instruction \"" << inst << "\" depends on\n";
+      FDG->iterateOverDependencesTo(&inst, true, true, true, iterF);
+    }
+
+    for (auto &inst : instructions(mainF)) {
+      errs() << "Instruction \"" << inst << "\" outgoing dependences\n";
+      FDG->iterateOverDependencesFrom(&inst, true, true, true, iterF);
+    }
+
+    for (auto &inst : instructions(mainF)) {
+      for (auto &inst2 : instructions(mainF)) {
+        for (auto dep : FDG->getDependences(&inst, &inst2)) {
+        }
+      }
+    }
+    errs() << "A DGEdge  = " << sizeof(DGEdge<Value, Value>) << "\n";
+    errs()
+        << "A Control  = " << sizeof(ControlDependence<Value, Value>) << "\n";
+    errs()
+        << "A Variable  = " << sizeof(VariableDependence<Value, Value>) << "\n";
+    errs() << "A Memory  = " << sizeof(MemoryDependence<Value, Value>) << "\n";
+
     return false;
   }
 
@@ -168,10 +118,10 @@ static RegisterStandardPasses _RegPass1(PassManagerBuilder::EP_OptimizerLast,
                                             PM.add(_PassMaker = new CAT());
                                           }
                                         }); // ** for -Ox
-static RegisterStandardPasses
-    _RegPass2(PassManagerBuilder::EP_EnabledOnOptLevel0,
-              [](const PassManagerBuilder &, legacy::PassManagerBase &PM) {
-                if (!_PassMaker) {
-                  PM.add(_PassMaker = new CAT());
-                }
-              }); // ** for -O0
+static RegisterStandardPasses _RegPass2(
+    PassManagerBuilder::EP_EnabledOnOptLevel0,
+    [](const PassManagerBuilder &, legacy::PassManagerBase &PM) {
+      if (!_PassMaker) {
+        PM.add(_PassMaker = new CAT());
+      }
+    }); // ** for -O0

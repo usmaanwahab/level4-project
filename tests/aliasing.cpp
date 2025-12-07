@@ -21,4 +21,5 @@ int main()
         p[i] = p[i] + 1;
         q[i] = q[i] + p[i];
     }
+    return 0;
 }

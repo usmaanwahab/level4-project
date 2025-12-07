@@ -22,8 +22,7 @@ add_llvm_pass_plugin(MyPass src/main.cpp)
 
 target_include_directories(MyPass PRIVATE
     ${NOELLE_DIR}/install/include
-    ${NOELLE_DIR}/build/_deps/svf-src/svf/include
-    ${NOELLE_DIR}/build/_deps/svf-build/include
+    ${NOELLE_DIR}/install/include/svf
 )
 
 target_link_libraries(MyPass PRIVATE Noelle)
