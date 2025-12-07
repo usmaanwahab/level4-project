@@ -26,7 +26,6 @@ struct CAT : public ModulePass {
      * Fetch NOELLE
      */
     auto &noelle = getAnalysis<NoellePass>().getNoelle();
-
     /*
      * Fetch the PDG
      */
