@@ -26,3 +26,6 @@ WORKDIR /opt
 RUN git clone https://github.com/EPCCed/epcc-openmp-microbenchmarks.git
 WORKDIR /opt/epcc-openmp-microbenchmarks/openmpbench_C_v40
 RUN make CC=clang-14 CFLAGS="-O2 -fopenmp -save-temps=llvm"
+RUN for f in *.bc; do \
+      llvm-dis-14 "$f" -o "${f%.bc}.ll"; \
+    done
