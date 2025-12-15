@@ -28,31 +28,3 @@ target_include_directories(MyPass PRIVATE
 )
 
 target_link_libraries(MyPass PRIVATE Noelle)
-
-file(GLOB TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp")
-
-foreach(src ${TEST_SOURCES})
-    get_filename_component(name ${src} NAME_WE)
-    get_filename_component(dir ${src} DIRECTORY)
-
-    set(OUTPUT_LL "${dir}/${name}.ll")
-    set(OUTPUT_BC "${dir}/${name}.bc")
-
-    add_custom_command(
-        OUTPUT ${OUTPUT_LL}
-        COMMAND clang++-14 -fopenmp -S -emit-llvm -o ${OUTPUT_LL} ${src}
-        DEPENDS ${src}
-        VERBATIM
-    )
-
-    add_custom_command(
-        OUTPUT ${OUTPUT_BC}
-        COMMAND clang++-14 -fopenmp -emit-llvm -c -o ${OUTPUT_BC} ${src}
-        DEPENDS ${src}
-        VERBATIM
-    )
-
-    add_custom_target(${name}_ir ALL
-        DEPENDS ${OUTPUT_LL} ${OUTPUT_BC}
-    )
-endforeach()
