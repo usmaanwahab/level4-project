@@ -21,6 +21,8 @@ _ what should I be looking for explicitly from klee, I am unsure exactly why thi
 ## Answers / Decisions
 - 
 
+
+
 ---
 
 ## Action Items
@@ -29,4 +31,11 @@ _ what should I be looking for explicitly from klee, I am unsure exactly why thi
 ---
 
 ## Quick Notes (during meeting)
+extend the kopm struct
+annotate the IR
 
+Debug mode openmp
+
+analyse each outline node and find each potiner and memory and heap
+
+not necesary for runtime MVP si filtered info before openMP rune
