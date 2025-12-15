@@ -1,3 +1,0 @@
-A powerful technique used by compilers to see how data and memory interactions occur throughout a programs life-cycle. It typically involves book keeping on the values of certain variables and expressions as they are computed and used throughout the program. The motivator behind this is to identify potential optimisations and/or potential errors.
-
-The underlying structure for data flow analysis is a graph   
