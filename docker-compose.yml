@@ -1,12 +1,6 @@
 services:
-  llvm14:
-    build: llvm14/
+  main:
+    build: .
     volumes:
-      - ./llvm14:/workspace
-    command: bash -c "mkdir -p build && cd build && cmake .. && make"
-
-  llvm20:
-    build: llvm20/
-    volumes:
-      - ./llvm20:/workspace
-    command: bash -c "sleep 5 && mkdir -p build && cd build && cmake .. && make"
+      - ./:/workspace
+    command: bash -c "tail -f /dev/null"
