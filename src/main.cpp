@@ -7,84 +7,93 @@
 
 using namespace arcana::noelle;
 
-namespace {
+namespace
+{
+  struct CAT : public ModulePass
+  {
+    static char ID;
+    CAT() : ModulePass(ID) {}
 
-    struct CAT : public ModulePass {
-        static char ID;
+    bool doInitialization(Module &M) override
+    {
+      return false;
+    }
 
-        CAT() : ModulePass(ID) {}
+    bool runOnModule(Module &M) override
+    {
+      auto &noelle = getAnalysis<NoellePass>().getNoelle();
+      auto PDG = noelle.getProgramDependenceGraph();
+      auto fm = noelle.getFunctionsManager();
+      auto main = fm->getEntryFunction();
 
-        bool doInitialization(Module &M) override {
-            return false;
-        }
+      errs() << "=================================\n";
+      errs() << "PROGRAM DEPENDENCE GRAPH (PDG)\n";
+      errs() << "=================================\n";
+      PDG->print(errs());
 
-        bool runOnModule(Module &M) override {
-            auto &noelle = getAnalysis<NoellePass>().getNoelle();
-            auto PDG = noelle.getProgramDependenceGraph();
-            auto fm = noelle.getFunctionsManager();
-            auto found = false;
+      // errs() << "=================================\n";
+      // errs() << "FUNCTION DEPENDENCE GRAPH (PDG)\n";
+      // errs() << "=================================\n";
+      // PDG->createFunctionSubgraph(*main)->print(errs());
 
-            auto iterF = [&found](Value *src, DGEdge<Value, Value> *dep) -> bool {
-                if (isa<ControlDependence<Value, Value>>(dep)) {
-                    return false;
-                } else {
-                    auto dataDep = cast<DataDependence<Value, Value>>(dep);
-                    if (dataDep->isRAWDependence()) {
-                        if (isa<MemoryDependence<Value, Value>>(dataDep)) {
-                            auto memDep = cast<MemoryDependence<Value, Value>>(dataDep);
-                            if (isa<MustMemoryDependence<Value, Value>>(memDep)) {
-                                found = true;
-                                errs() << "    " << *src << " DATA " << " RAW " << " MEMORY " << " MUST \n";
-                            }
-                        }
-                    }
-                }
-                return false;
-            };
+      // std::unordered_map<Value *, std::vector<DGEdge<Value, Value> *>> depsByObject;
+      // auto iterF = [&](Value *src, DGEdge<Value, Value> *dep) -> bool
+      // {
+      //   if (!isa<Instruction>(src)) {
+      //     return false;
+      //   }
+      //   auto srcInstruction = dyn_cast<Instruction>(src);
+      //   srcInstruction->print(errs());
+      //   if (isa<LoadInst>(srcInstruction)) {
+      //     auto *L = dyn_cast<LoadInst>(srcInstruction);
+      //     errs() << "--" << L->getPointerOperand();
+      //   } else if (isa<StoreInst>(srcInstruction)) {
+      //     auto *S = dyn_cast<StoreInst>(srcInstruction);
+      //     errs() <<  "--" << S->getPointerOperand();
+      //   }
+      //   errs() << "\n";
+      //   return false;
+      // };
+      // for (auto f : fm->getFunctions())
+      // {
+      //   auto FDG = PDG->createFunctionSubgraph(*f);
 
-            for (auto f: fm->getFunctions()) {
-                auto FDG = PDG->createFunctionSubgraph(*f);
-                for (auto &inst : instructions(f)) {
-                    FDG->iterateOverDependencesTo(&inst, true, true, true, iterF);
-                    if (found) {
-                        errs() << "^^Instruction \"" << inst << "\" depends on ^^^\n";
-                        found = false;
-                    }
-                }
+      //   for (auto &inst : instructions(f))
+      //   {
+      //     FDG->iterateOverDependencesFrom(&inst, true, false, true, iterF);
+      //   }
+      // }
 
-                for (auto &inst : instructions(f)) {
-                    FDG->iterateOverDependencesFrom(&inst, true, true, true, iterF);
-                    if (found) {
-                        errs() << "^^Instruction \"" << inst << "\" outgoing dependencies^^^\n";
-                        found = false;
-                    }
-                }
-            }
-            return false;
-        }
-        void getAnalysisUsage(AnalysisUsage &AU) const override {
-            AU.addRequired<NoellePass>();
-        }
-    };
+      return false;
+    }
+
+    void getAnalysisUsage(AnalysisUsage &AU) const override
+    {
+      AU.addRequired<NoellePass>();
+    }
+  };
 }
 
 // Next there is code to register your pass to "opt"
 char CAT::ID = 0;
 static RegisterPass<CAT> X("CAT", "Simple user of the Noelle framework");
-
 // Next there is code to register your pass to "clang"
 static CAT *_PassMaker = NULL;
 static RegisterStandardPasses _RegPass1(PassManagerBuilder::EP_OptimizerLast,
                                         [](const PassManagerBuilder &,
-                                           legacy::PassManagerBase &PM) {
-                                          if (!_PassMaker) {
+                                           legacy::PassManagerBase &PM)
+                                        {
+                                          if (!_PassMaker)
+                                          {
                                             PM.add(_PassMaker = new CAT());
                                           }
                                         }); // ** for -Ox
 static RegisterStandardPasses _RegPass2(
     PassManagerBuilder::EP_EnabledOnOptLevel0,
-    [](const PassManagerBuilder &, legacy::PassManagerBase &PM) {
-      if (!_PassMaker) {
+    [](const PassManagerBuilder &, legacy::PassManagerBase &PM)
+    {
+      if (!_PassMaker)
+      {
         PM.add(_PassMaker = new CAT());
       }
     }); // ** for -O0
