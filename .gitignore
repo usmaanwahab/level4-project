@@ -51,3 +51,8 @@ build/
 *.bc
 
 noelle
+*.dot
+*.svg
+.editorconfig
+*.log
+*.txt
