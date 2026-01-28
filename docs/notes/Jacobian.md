@@ -36,8 +36,6 @@ int main() {
 }
 ```
 
-All known SCC groups are hidden, all floating values starting with an `i` are remnants from removing known SCC nodes. However, generating the image and collapsing edges crashes the graphviz tool. 
-
 ---
 
 ```cpp
