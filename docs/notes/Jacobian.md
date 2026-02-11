@@ -48,6 +48,16 @@ for (int i = 0; i < N; i++) {
 
 ![Jacobian Loop 3](media/jacobian-1d-0.svg)
 
+We can ignore the SCC containing instructions for `@loop_id_0` as this is purely to identify the loop_id for 
+```bash
+noelle-ldg-dot program.bc --ldg-dot-loop-id=0
+```
+as the graph only works on a per loop basis that is found in the normalised bitcode.
+
+The focus will be on the largest unknown SCC as that contains the majority of work, in this loop there is a mix of computation and loop bookkeeping.
+
+%16 is the base address of the `b` array which is then cast to `i64` and then using the `gep` instruction at the offset
+
 ---
 
 ```cpp

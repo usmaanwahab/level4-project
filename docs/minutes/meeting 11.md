@@ -30,7 +30,6 @@ Attendees: Usmaan & Nikela
 
 Look at a simple stencil, a point based on neighbouring stencils, how heat propagates over time on a surface. Keep two arrays, calc current array values from previous another is wave propagation, consider at the same iteration
 
-
 Double check openmp flag
 
 Change program to understand how the graph is displayed 
