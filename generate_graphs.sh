@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#! /usr/bin/bash
 
 DIR="${1:-.}"
 
@@ -20,7 +20,7 @@ for f in "$DIR"/*.cpp; do
 
 done
 
-# generate svg``
+# generate svg
 for f in "$DIR"/*.bc; do
   [ -e "$f" ] || continue
 
@@ -28,10 +28,15 @@ for f in "$DIR"/*.bc; do
   outdir="$(dirname "$f")"
   norm="$outdir/${base}_norm.bc"
   noelle-norm "$f" -o "$norm"
-  noelle-ldg-dot $norm --ldg-dot-loop-id=0 --ldg-dot-collapse-edges --ldg-dot-only-lc-edges
-  dot -Tsvg "ldg_id_0.dot" -o "${base}.svg"
-  rm ldg_id_0.dot
+  noelle-ldg-dot $norm --ldg-dot-loop-id=0 
+  mv ldg_id_0.dot $norm.dot
+  dot -Kneato -Gordering=out -Goverlap=false -Gsplines=ortho -Gnodesep=0.6 -Granksep=1.0 -Tsvg "$norm.dot" -o "${base}.svg"
 
+done
+
+for loop in {0..3}; do
+  noelle-ldg-dot jacobian-1d_norm.bc --ldg-dot-loop-id=$loop && \
+  dot -Kneato -Gordering=out -Goverlap=false -Gsplines=ortho -Gnodesep=0.6 -Granksep=1.0 -Tsvg ldg_id_$loop.dot -o "jacobian-1d-$loop.svg"
 done
 
 # for f in "$DIR"/*_norm.bc; do
