@@ -2,24 +2,35 @@
 #include "llvm/IR/Function.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
-#include "llvm/IR/Value.h"
-#include "llvm/IR/Instructions.h"
-#include "llvm/IR/Constants.h"
-#include "llvm/IR/DerivedTypes.h"
-#include "llvm/Support/raw_ostream.h"
-#include <set>
-#include <map>
-#include "llvm/Analysis/ValueTracking.h"
 
 #include "arcana/noelle/core/NoellePass.hpp"
 
 using namespace arcana::noelle;
 
+struct MemoryAccessNode
+{
+  Value *baseAddrPtr;
+  bool isRead;
+  bool hasStride;
+  int stride;
+  std::unordered_set<MemoryAccessNode> dependsOn;
+};
+
+struct TaskInfo
+{
+  int id;
+  llvm::Function *outlinedFunction;
+  MemoryAccessNode entryNode;
+  std::vector<MemoryAccessNode *> nodes;
+};
+
 namespace
 {
+
   struct CAT : public ModulePass
   {
     static char ID;
+
     CAT() : ModulePass(ID) {}
 
     bool doInitialization(Module &M) override
@@ -31,121 +42,97 @@ namespace
     {
       auto &noelle = getAnalysis<NoellePass>().getNoelle();
       auto PDG = noelle.getProgramDependenceGraph();
-      auto functions = noelle.getFunctionsManager()->getFunctions();
-      std::unordered_map<Function *, std::unordered_set<DGNode<llvm::Value> *>> fsgExternalDeps;
+      auto fm = noelle.getFunctionsManager();
 
-      for (Function *f : functions)
+      for (auto f : fm->getFunctions())
       {
         if (f->getName().find(".omp_outlined") == std::string::npos)
           continue;
 
-        auto *FSG = PDG->createFunctionSubgraph(*f);
-
-        std::unordered_set<DGNode<llvm::Value> *> fsgNodes;
-        for (auto *n : FSG->getNodes())
+        auto FDG = PDG->createFunctionSubgraph(*f);
+        for (auto &inst : instructions(f))
         {
-          fsgNodes.insert(n);
-        }
+          std::vector<Value *> deps;
 
-        std::unordered_set<DGNode<llvm::Value> *> externalDeps;
-
-        for (auto *n : fsgNodes)
-        {
-          for (auto *edge : n->getAllEdges())
+          auto iterF = [&deps](Value *src, DGEdge<Value, Value> *dep) -> bool
           {
+            if (isa<ControlDependence<Value, Value>>(dep))
+              return false;
 
-            auto *src = edge->getSrcNode();
-            if (!fsgNodes.count(src))
+            auto dataDep = cast<DataDependence<Value, Value>>(dep);
+            if (dataDep->isRAWDependence())
             {
-              externalDeps.insert(src);
-            }
-            // errs() << "External dep for " << f->getName() << ": ";
-            // src->getT()->print(errs());
-            // errs() << "\n";
-          }
-        }
-        fsgExternalDeps[f] = std::move(externalDeps);
-      }
-      for (auto &pair : fsgExternalDeps)
-      {
-        errs() << "External deps for " << pair.first->getName() << ":\n";
-        for (auto *dep : pair.second)
-        {
-          dep->getT()->print(errs());
-          errs() << "\n";
-        }
-      }
-      for (auto it1 = fsgExternalDeps.begin(); it1 != fsgExternalDeps.end(); ++it1)
-      {
-        for (auto it2 = std::next(it1); it2 != fsgExternalDeps.end(); ++it2)
-        {
-          for (auto *depNode1 : it1->second)
-          {
-            Value *dep1 = depNode1->getT();
-            // Value *canon1 = dep1->stripPointerCasts();
-
-            for (auto *depNode2 : it2->second)
-            {
-              Value *dep2 = depNode2->getT();
-              // Value *canon2 = dep2->stripPointerCasts();
-              Value *canon1 = llvm::getUnderlyingObject(dep1);
-              Value *canon2 = llvm::getUnderlyingObject(dep2);
-              if (canon1 == canon2)
+              if (isa<MemoryDependence<Value, Value>>(dataDep))
               {
-                errs() << "Shared external dep between "
-                       << it1->first->getName() << " and "
-                       << it2->first->getName() << ": ";
-                dep1->getType()->print(errs());
-                errs() << " (";
-                canon1->print(errs());
-                errs() << ")\n";
+                auto memDep = cast<MemoryDependence<Value, Value>>(dataDep);
+                if (isa<MustMemoryDependence<Value, Value>>(memDep))
+                {
+                  deps.push_back(src);
+                }
               }
             }
+            return false;
+          };
+
+          FDG->iterateOverDependencesTo(&inst, true, true, true, iterF);
+
+          if (!deps.empty())
+          {
+            for (auto *d : deps)
+            {
+              errs() << "Instruction \"" << inst << "\" incoming dependencies:\n";
+              for (auto *d : deps)
+              {
+                errs() << "    " << *d << " DATA RAW MEMORY MUST\n";
+              }
+              errs() << "\n";
+            }
+          }
+        }
+
+        for (auto &inst : instructions(f))
+        {
+          std::vector<Value *> deps;
+          // TODO: inst.setMetadata
+          auto iterF = [&deps](Value *dst, DGEdge<Value, Value> *dep) -> bool
+          {
+            if (isa<ControlDependence<Value, Value>>(dep))
+            {
+              return false;
+            }
+            if (!dep->isLoopCarriedDependence())
+            {
+              return false;
+            }
+            auto dataDep = cast<DataDependence<Value, Value>>(dep);
+            if (dataDep->isRAWDependence())
+            {
+              if (isa<MemoryDependence<Value, Value>>(dataDep))
+              {
+                auto memDep = cast<MemoryDependence<Value, Value>>(dataDep);
+                if (isa<MustMemoryDependence<Value, Value>>(memDep))
+                {
+                  deps.push_back(dst);
+                }
+              }
+            }
+            return false;
+          };
+
+          FDG->iterateOverDependencesFrom(&inst, true, true, true, iterF);
+
+          if (!deps.empty())
+          {
+            errs() << "Instruction \"" << inst << "\" outgoing dependencies:\n";
+            for (auto *d : deps)
+            {
+              errs() << "    " << *d << " DATA RAW MEMORY MUST\n";
+            }
+            errs() << "\n";
           }
         }
       }
 
-      // for (Function *f : functions)
-      // {
-      //   if (f->getName().find(".omp_outlined") == std::string::npos)
-      //   {
-      //     continue;
-      //   }
-
-      //   auto FSG = PDG->createFunctionSubgraph(*f);
-
-      //   std::unordered_set<DGNode<llvm::Value> *> fsgNodes;
-      //   for (auto *n : FSG->getNodes())
-      //   {
-      //     fsgNodes.insert(n);
-      //   }
-      //   for (auto *pdgNode : PDG->getNodes())
-      //   {
-
-      //     if (fsgNodes.count(pdgNode))
-      //     {
-      //       continue;
-      //     }
-
-      //     bool hasCrossDep = false;
-      //     for (auto *edge : pdgNode->getOutgoingEdges())
-      //     {
-      //       auto dst = edge->getDstNode();
-      //       if (fsgNodes.count(dst))
-      //       {
-      //         hasCrossDep = true;
-      //         break;
-      //       }
-      //     }
-
-      //     if (hasCrossDep)
-      //     {
-      //       errs() << "External node with dependency to FSG:\n";
-      //       pdgNode->getT()->print(errs());
-      //       errs() << "\n";
-      //     }
-      //   }
-      // }
       return false;
     }
 
@@ -154,6 +141,7 @@ namespace
       AU.addRequired<NoellePass>();
     }
   };
+
 }
 
 // Next there is code to register your pass to "opt"
