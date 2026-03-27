@@ -5,7 +5,7 @@ DIR="${1:-.}"
 # clean
 rm *.svg
 rm *.dot
-rm *.bc
+rm *.bc2
 rm *.ll
 
 # compile ll and bc
@@ -15,9 +15,9 @@ for f in "$DIR"/*.cpp; do
   base="$(basename "${f%.cpp}")"
   outdir="$(dirname "$f")"
 
-  clang++-14 -fopenmp -emit-llvm -S "$f" -o "$outdir/${base}.ll"
-  clang++-14 -fopenmp -emit-llvm -c "$f" -o "$outdir/${base}.bc"
-
+  clang++-14 -fopenmp -O2 -emit-llvm -S "$f" -o "$outdir/${base}.ll"
+  clang++-14 -fopenmp -O2 -emit-llvm -c "$f" -o "$outdir/${base}.bc"
+  clang++-14 -fopenmp -O2 -fno-PIE -no-pie -g "$f" -o "$outdir/${base}"
 done
 
 # generate svg

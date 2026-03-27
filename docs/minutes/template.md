@@ -1,5 +1,5 @@
 
-**Date & Time:** 00-00-2025 @ 11:30  
+**Date & Time:** 00-00-2026 @ 12:30  
 Attendees: Usmaan & Nikela
 
 ---

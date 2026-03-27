@@ -1,5 +1,5 @@
 
-**Date & Time:** 29-01-2025 @ 12:30  
+**Date & Time:** 29-01-2026 @ 12:30  
 Attendees: Usmaan & Nikela
 
 ---
